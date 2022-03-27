@@ -2,9 +2,9 @@ package chesterfield_test
 
 import (
 	"github.com/jarcoal/httpmock"
+	"github.com/kevin-secrist/cfactivecallmonitor/internal/chesterfield"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/kevin-secrist/cfactivecallmonitor/internal/chesterfield"
 	"testing"
 )
 

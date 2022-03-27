@@ -1,0 +1,12 @@
+[
+  {
+    "id": "1234",
+    "callReceived": "3/27/2022 12:30:25 PM",
+    "location": "123XX DIFFERENT ST",
+    "type": "EMS CALL",
+    "currentStatus": "Dispatched",
+    "area": "F20",
+    "priority": "3",
+    "callReceivedFormatted": "3/27/2022 12:30 PM"
+  }
+]

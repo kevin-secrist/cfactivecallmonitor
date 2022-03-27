@@ -1,5 +1,10 @@
 package chesterfield
 
+import (
+	"errors"
+	"fmt"
+)
+
 type CallForService []struct {
 	ID                    string `json:"id,omitempty"`
 	CallReceived          string `json:"callReceived,omitempty"`
@@ -22,6 +27,10 @@ func (client *ChesterfieldAPIClient) getServiceCalls(service string) (CallForSer
 
 	if err != nil {
 		return nil, err
+	}
+
+	if response.IsError() {
+		return nil, errors.New(fmt.Sprintf("Received invalid status code: %d", response.StatusCode()))
 	}
 
 	slice := response.Result().(*CallForService)
