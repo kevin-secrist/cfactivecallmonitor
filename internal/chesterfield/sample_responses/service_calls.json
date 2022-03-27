@@ -1,0 +1,22 @@
+[
+  {
+    "id": "0123",
+    "callReceived": "3/23/2022 11:22:39 PM",
+    "location": "22XX FAKE RD",
+    "type": "SUSPICIOUS SITUATION",
+    "currentStatus": "Dispatched",
+    "area": "11",
+    "priority": "3",
+    "callReceivedFormatted": "3/23/2022 11:22 PM"
+  },
+  {
+    "id": "0124",
+    "callReceived": "3/23/2022 11:30:03 PM",
+    "location": "43XX EXAMPLE CT",
+    "type": "DOMESTIC",
+    "currentStatus": "Dispatched",
+    "area": "60",
+    "priority": "2",
+    "callReceivedFormatted": "3/23/2022 11:30 PM"
+  }
+]
