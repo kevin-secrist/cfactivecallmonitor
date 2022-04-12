@@ -1,19 +1,18 @@
 package chesterfield
 
 import (
-	"errors"
 	"fmt"
 )
 
 type CallForService []struct {
-	ID                    string `json:"id,omitempty"`
-	CallReceived          string `json:"callReceived,omitempty"`
-	Location              string `json:"location,omitempty"`
-	Type                  string `json:"type,omitempty"`
-	CurrentStatus         string `json:"currentStatus,omitempty"`
-	Area                  string `json:"area,omitempty"`
-	Priority              string `json:"priority,omitempty"`
-	CallReceivedFormatted string `json:"callReceivedFormatted,omitempty"`
+	ID                    string     `json:"id,omitempty"`
+	CallReceived          CustomTime `json:"callReceived,omitempty"`
+	Location              string     `json:"location,omitempty"`
+	Type                  string     `json:"type,omitempty"`
+	CurrentStatus         string     `json:"currentStatus,omitempty"`
+	Area                  string     `json:"area,omitempty"`
+	Priority              string     `json:"priority,omitempty"`
+	CallReceivedFormatted string     `json:"callReceivedFormatted,omitempty"`
 }
 
 func (client *ChesterfieldAPIClient) getServiceCalls(service string) (CallForService, error) {
@@ -30,7 +29,7 @@ func (client *ChesterfieldAPIClient) getServiceCalls(service string) (CallForSer
 	}
 
 	if response.IsError() {
-		return nil, errors.New(fmt.Sprintf("Received invalid status code: %d", response.StatusCode()))
+		return nil, fmt.Errorf("received invalid status code: %d", response.StatusCode())
 	}
 
 	slice := response.Result().(*CallForService)
