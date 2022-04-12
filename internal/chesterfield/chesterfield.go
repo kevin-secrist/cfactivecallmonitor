@@ -10,7 +10,6 @@ const (
 
 type ChesterfieldAPIClient struct {
 	RestClient *resty.Client
-	baseURL    string
 	apiKey     string
 }
 
@@ -24,7 +23,6 @@ func New(apiKey string) *ChesterfieldAPIClient {
 
 	return &ChesterfieldAPIClient{
 		RestClient: restClient,
-		baseURL:    baseURL,
 		apiKey:     apiKey,
 	}
 }
