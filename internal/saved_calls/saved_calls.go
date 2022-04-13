@@ -15,7 +15,7 @@ import (
 
 const (
 	savedCallsTableName = "SavedCalls"
-	secondaryIndexName  = "StatusIndex"
+	secondaryIndexName  = "ActiveIndex"
 )
 
 type DynamoDB interface {
@@ -44,7 +44,7 @@ type SavedCall struct {
 	CallReceived    time.Time `dynamodbav:"callReceived,omitempty"`
 	CallArrival     time.Time `dynamodbav:"callArrival,omitempty"`
 	CallResolved    time.Time `dynamodbav:"callResolved,omitempty"`
-	IsResolved      bool      `dynamodbav:"isResolved"`
+	IsActive        bool      `dynamodbav:"isActive"`
 	Location        string    `dynamodbav:"location,omitempty"`
 	Area            string    `dynamodbav:"area,omitempty"`
 	Priority        string    `dynamodbav:"priority,omitempty"`
@@ -84,7 +84,7 @@ func NewWithClient(dynamoDB DynamoDB, clock func() time.Time) *SavedCallDataAcce
 }
 
 func (dao *SavedCallDataAccess) GetActiveCalls(ctx context.Context) ([]SavedCall, error) {
-	keyExpression := expression.Key("isResolved").Equal(expression.Value(false))
+	keyExpression := expression.Key("isActive").Equal(expression.Value(true))
 	expr, err := expression.
 		NewBuilder().
 		WithKeyCondition(keyExpression).
@@ -143,13 +143,13 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 	normalizeCall(&activeCall)
 
 	var timestampColumnName string
-	var isResolved bool
+	isActive := true
 
 	switch activeCall.LastKnownStatus {
 	case "on scene":
 		timestampColumnName = "callArrival"
 	case "resolved":
-		isResolved = true
+		isActive = false
 		timestampColumnName = "callResolved"
 	default:
 		return fmt.Errorf("unknown status: %s", activeCall.LastKnownStatus)
@@ -157,8 +157,11 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 
 	setExpression := expression.
 		Set(expression.Name("lastKnownStatus"), expression.Value(activeCall.LastKnownStatus)).
-		Set(expression.Name(timestampColumnName), expression.Value(dao.clock())).
-		Set(expression.Name("isResolved"), expression.Value(isResolved))
+		Set(expression.Name(timestampColumnName), expression.Value(dao.clock()))
+
+	if !isActive {
+		setExpression = setExpression.Remove(expression.Name("isActive"))
+	}
 
 	expr, err := expression.
 		NewBuilder().
