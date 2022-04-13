@@ -1,17 +1,21 @@
 package chesterfield_test
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/jarcoal/httpmock"
 	"github.com/kevin-secrist/cfactivecallmonitor/internal/chesterfield"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"net/http"
 )
 
 const (
 	policeCallUrl = "https://api.chesterfield.gov/api/Police/V1.0/Calls/CallsForService"
 	fireCallUrl   = "https://api.chesterfield.gov/api/Fire/V1.0/Calls/CallsForService"
 )
+
+var localLocation, _ = time.LoadLocation("America/New_York")
 
 var _ = Describe("Chesterfield API Client", func() {
 	It("returns a list of active police calls", func() {
@@ -26,7 +30,7 @@ var _ = Describe("Chesterfield API Client", func() {
 		Expect(result).To(Equal(chesterfield.CallForService{
 			{
 				ID:                    "0123",
-				CallReceived:          "3/23/2022 11:22:39 PM",
+				CallReceived:          chesterfield.CustomTime{Time: time.Date(2022, 3, 23, 23, 22, 39, 0, localLocation)},
 				Location:              "22XX FAKE RD",
 				Type:                  "SUSPICIOUS SITUATION",
 				CurrentStatus:         "Dispatched",
@@ -36,7 +40,7 @@ var _ = Describe("Chesterfield API Client", func() {
 			},
 			{
 				ID:                    "0124",
-				CallReceived:          "3/23/2022 11:30:03 PM",
+				CallReceived:          chesterfield.CustomTime{Time: time.Date(2022, 3, 23, 23, 30, 3, 0, localLocation)},
 				Location:              "43XX EXAMPLE CT",
 				Type:                  "DOMESTIC",
 				CurrentStatus:         "Dispatched",
@@ -58,7 +62,7 @@ var _ = Describe("Chesterfield API Client", func() {
 		Expect(result).To(Equal(chesterfield.CallForService{
 			{
 				ID:                    "1234",
-				CallReceived:          "3/27/2022 12:30:25 PM",
+				CallReceived:          chesterfield.CustomTime{Time: time.Date(2022, 3, 27, 12, 30, 25, 0, localLocation)},
 				Location:              "123XX DIFFERENT ST",
 				Type:                  "EMS CALL",
 				CurrentStatus:         "Dispatched",
@@ -97,7 +101,7 @@ var _ = Describe("Chesterfield API Client", func() {
 		result, err := subject.GetPoliceCalls()
 
 		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(Equal("Received invalid status code: 500"))
+		Expect(err.Error()).To(Equal("received invalid status code: 500"))
 		Expect(result).To(BeNil())
 	})
 })
