@@ -33,7 +33,7 @@ var _ = Describe("Saved Calls DAO", func() {
 					"callReceived":    &types.AttributeValueMemberS{Value: "2022-03-23T23:22:39-04:00"},
 					"callArrival":     &types.AttributeValueMemberS{Value: "2022-03-23T23:27:39-04:00"},
 					"callResolved":    &types.AttributeValueMemberS{Value: "2022-03-23T23:32:39-04:00"},
-					"isResolved":      &types.AttributeValueMemberBOOL{Value: false},
+					"isActive":        &types.AttributeValueMemberBOOL{Value: true},
 					"location":        &types.AttributeValueMemberS{Value: "22XX FAKE RD"},
 					"area":            &types.AttributeValueMemberS{Value: "11"},
 					"priority":        &types.AttributeValueMemberS{Value: "3"},
@@ -49,7 +49,7 @@ var _ = Describe("Saved Calls DAO", func() {
 					"callReceived":    &types.AttributeValueMemberS{Value: "2022-03-23T23:30:03-04:00"},
 					"callArrival":     &types.AttributeValueMemberS{Value: "2022-03-23T23:35:03-04:00"},
 					"callResolved":    &types.AttributeValueMemberS{Value: "2022-03-23T23:40:03-04:00"},
-					"isResolved":      &types.AttributeValueMemberBOOL{Value: false},
+					"isActive":        &types.AttributeValueMemberBOOL{Value: true},
 					"location":        &types.AttributeValueMemberS{Value: "43XX EXAMPLE CT"},
 					"area":            &types.AttributeValueMemberS{Value: "60"},
 					"priority":        &types.AttributeValueMemberS{Value: "2"},
@@ -66,13 +66,13 @@ var _ = Describe("Saved Calls DAO", func() {
 			dynamoDBMock.On("Query", ctx, mock.MatchedBy(func(queryInput *dynamodb.QueryInput) bool {
 				input := *queryInput
 				Expect(*input.TableName).To(Equal("SavedCalls"))
-				Expect(*input.IndexName).To(Equal("StatusIndex"))
+				Expect(*input.IndexName).To(Equal("ActiveIndex"))
 				Expect(*input.KeyConditionExpression).To(Equal("#0 = :0"))
 				Expect(input.ExpressionAttributeNames).To(Equal(map[string]string{
-					"#0": "isResolved",
+					"#0": "isActive",
 				}))
 				Expect(input.ExpressionAttributeValues).To(Equal(map[string]types.AttributeValue{
-					":0": &types.AttributeValueMemberBOOL{Value: false},
+					":0": &types.AttributeValueMemberBOOL{Value: true},
 				}))
 
 				return true
@@ -92,7 +92,7 @@ var _ = Describe("Saved Calls DAO", func() {
 			Expect(result[0].CallReceived.Equal(time.Date(2022, 3, 24, 03, 22, 39, 0, time.UTC))).To(BeTrue())
 			Expect(result[0].CallArrival.Equal(time.Date(2022, 3, 24, 03, 27, 39, 0, time.UTC))).To(BeTrue())
 			Expect(result[0].CallResolved.Equal(time.Date(2022, 3, 24, 03, 32, 39, 0, time.UTC))).To(BeTrue())
-			Expect(result[0].IsResolved).To(Equal(false))
+			Expect(result[0].IsActive).To(Equal(true))
 			Expect(result[0].Location).To(Equal("22XX FAKE RD"))
 			Expect(result[0].Area).To(Equal("11"))
 			Expect(result[0].Priority).To(Equal("3"))
@@ -107,7 +107,7 @@ var _ = Describe("Saved Calls DAO", func() {
 			Expect(result[1].CallReceived.Equal(time.Date(2022, 3, 24, 03, 30, 03, 0, time.UTC))).To(BeTrue())
 			Expect(result[1].CallArrival.Equal(time.Date(2022, 3, 24, 03, 35, 03, 0, time.UTC))).To(BeTrue())
 			Expect(result[1].CallResolved.Equal(time.Date(2022, 3, 24, 03, 40, 03, 0, time.UTC))).To(BeTrue())
-			Expect(result[1].IsResolved).To(Equal(false))
+			Expect(result[1].IsActive).To(Equal(true))
 			Expect(result[1].Location).To(Equal("43XX EXAMPLE CT"))
 			Expect(result[1].Area).To(Equal("60"))
 			Expect(result[1].Priority).To(Equal("2"))
@@ -126,7 +126,7 @@ var _ = Describe("Saved Calls DAO", func() {
 				CallReceived:    time.Date(2022, 3, 23, 23, 22, 39, 0, localLocation),
 				CallArrival:     time.Date(2022, 3, 23, 23, 27, 39, 0, localLocation),
 				CallResolved:    time.Date(2022, 3, 23, 23, 32, 39, 0, localLocation),
-				IsResolved:      false,
+				IsActive:        true,
 				Location:        "22XX FAKE RD",
 				Area:            "11",
 				Priority:        "3",
@@ -147,7 +147,7 @@ var _ = Describe("Saved Calls DAO", func() {
 				Expect(input.Item["callReceived"]).To(Equal(&types.AttributeValueMemberS{Value: "2022-03-24T03:22:39Z"}))
 				Expect(input.Item["callArrival"]).To(Equal(&types.AttributeValueMemberS{Value: "2022-03-24T03:27:39Z"}))
 				Expect(input.Item["callResolved"]).To(Equal(&types.AttributeValueMemberS{Value: "2022-03-24T03:32:39Z"}))
-				Expect(input.Item["isResolved"]).To(Equal(&types.AttributeValueMemberBOOL{Value: false}))
+				Expect(input.Item["isActive"]).To(Equal(&types.AttributeValueMemberBOOL{Value: true}))
 				Expect(input.Item["location"]).To(Equal(&types.AttributeValueMemberS{Value: "22XX FAKE RD"}))
 				Expect(input.Item["area"]).To(Equal(&types.AttributeValueMemberS{Value: "11"}))
 				Expect(input.Item["priority"]).To(Equal(&types.AttributeValueMemberS{Value: "3"}))
@@ -173,14 +173,12 @@ var _ = Describe("Saved Calls DAO", func() {
 				CallReason:      "SUSPICIOUS SITUATION",
 				LastKnownStatus: "On Scene",
 				CallReceived:    time.Date(2022, 3, 23, 23, 22, 39, 0, localLocation),
-				// CallDispatched:  time.Date(2022, 3, 23, 23, 27, 39, 0, localLocation),
-				// CallResolved:    time.Date(2022, 3, 23, 23, 32, 39, 0, localLocation),
-				IsResolved:  false,
-				Location:    "22XX FAKE RD",
-				Area:        "11",
-				Priority:    "3",
-				HouseNumber: "22XX",
-				StreetName:  "FAKE RD",
+				IsActive:        true,
+				Location:        "22XX FAKE RD",
+				Area:            "11",
+				Priority:        "3",
+				HouseNumber:     "22XX",
+				StreetName:      "FAKE RD",
 			}
 		})
 		It("sets arrival time", func() {
@@ -189,16 +187,15 @@ var _ = Describe("Saved Calls DAO", func() {
 				input := *updateInput
 				Expect(*input.TableName).To(Equal("SavedCalls"))
 				Expect(len(input.Key)).To(Equal(1))
+				Expect(*input.UpdateExpression).To(Equal("SET #0 = :0, #1 = :1\n"))
 				Expect(input.Key["partitionKey"]).To(Equal(&types.AttributeValueMemberS{Value: "2022/03/23#0123#police"}))
 				Expect(input.ExpressionAttributeNames).To(Equal(map[string]string{
 					"#0": "lastKnownStatus",
 					"#1": "callArrival",
-					"#2": "isResolved",
 				}))
 				Expect(input.ExpressionAttributeValues).To(Equal(map[string]types.AttributeValue{
 					":0": &types.AttributeValueMemberS{Value: "on scene"},
 					":1": &types.AttributeValueMemberS{Value: "2030-01-01T06:30:00Z"},
-					":2": &types.AttributeValueMemberBOOL{Value: false},
 				}))
 
 				return true
@@ -217,16 +214,16 @@ var _ = Describe("Saved Calls DAO", func() {
 				input := *updateInput
 				Expect(*input.TableName).To(Equal("SavedCalls"))
 				Expect(len(input.Key)).To(Equal(1))
+				Expect(*input.UpdateExpression).To(Equal("REMOVE #0\nSET #1 = :0, #2 = :1\n"))
 				Expect(input.Key["partitionKey"]).To(Equal(&types.AttributeValueMemberS{Value: "2022/03/23#0123#police"}))
 				Expect(input.ExpressionAttributeNames).To(Equal(map[string]string{
-					"#0": "lastKnownStatus",
-					"#1": "callResolved",
-					"#2": "isResolved",
+					"#0": "isActive",
+					"#1": "lastKnownStatus",
+					"#2": "callResolved",
 				}))
 				Expect(input.ExpressionAttributeValues).To(Equal(map[string]types.AttributeValue{
 					":0": &types.AttributeValueMemberS{Value: "resolved"},
 					":1": &types.AttributeValueMemberS{Value: "2030-01-01T06:30:00Z"},
-					":2": &types.AttributeValueMemberBOOL{Value: true},
 				}))
 
 				return true
