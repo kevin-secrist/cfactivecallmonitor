@@ -19,3 +19,45 @@ provider "aws" {
   profile = "default"
   region  = "us-east-1"
 }
+
+resource "aws_dynamodb_table" "savedcalls" {
+  name           = "SavedCalls"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "streetName"
+  range_key      = "sortKey"
+
+  attribute {
+    name = "streetName"
+    type = "S"
+  }
+
+  attribute {
+    name = "sortKey"
+    type = "S"
+  }
+
+  attribute {
+    name = "isActive"
+    type = "S"
+  }
+
+  attribute {
+    name = "callReceived"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "ActiveIndex"
+    hash_key        = "isActive"
+    range_key       = "callReceived"
+    write_capacity  = 1
+    read_capacity   = 1
+    projection_type = "ALL"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
