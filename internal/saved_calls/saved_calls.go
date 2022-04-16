@@ -37,7 +37,7 @@ type SavedCallDataAccess struct {
 }
 
 type SavedCall struct {
-	PartitionKey    string    `dynamodbav:"partitionKey,omitempty"`
+	SortKey         string    `dynamodbav:"sortKey,omitempty"`
 	ID              string    `dynamodbav:"id,omitempty"`
 	CallType        string    `dynamodbav:"callType,omitempty"`
 	CallReason      string    `dynamodbav:"callReason,omitempty"`
@@ -55,7 +55,7 @@ type SavedCall struct {
 
 func normalizeCall(savedCall *SavedCall) {
 	savedCall.LastKnownStatus = strings.ToLower(savedCall.LastKnownStatus)
-	savedCall.PartitionKey = strings.Join(
+	savedCall.SortKey = strings.Join(
 		[]string{
 			savedCall.CallReceived.Format("2006/01/02"),
 			savedCall.ID,
@@ -179,7 +179,11 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 		return err
 	}
 
-	partitionKey, err := attributevalue.Marshal(activeCall.PartitionKey)
+	sortKey, err := attributevalue.Marshal(activeCall.SortKey)
+	if err != nil {
+		return err
+	}
+	streetName, err := attributevalue.Marshal(activeCall.StreetName)
 	if err != nil {
 		return err
 	}
@@ -187,7 +191,8 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 	_, err = dao.Service.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(savedCallsTableName),
 		Key: map[string]types.AttributeValue{
-			"partitionKey": partitionKey,
+			"streetName": streetName,
+			"sortKey":    sortKey,
 		},
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),

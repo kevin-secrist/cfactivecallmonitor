@@ -25,7 +25,7 @@ var _ = Describe("Saved Calls DAO", func() {
 		It("returns a list of active calls", func() {
 			sampleCallItems := []map[string]types.AttributeValue{
 				{
-					"partitionKey":    &types.AttributeValueMemberS{Value: "2022/03/23#0123#police"},
+					"sortKey":         &types.AttributeValueMemberS{Value: "2022/03/23#0123#police"},
 					"id":              &types.AttributeValueMemberS{Value: "0123"},
 					"callType":        &types.AttributeValueMemberS{Value: "police"},
 					"callReason":      &types.AttributeValueMemberS{Value: "SUSPICIOUS SITUATION"},
@@ -41,7 +41,7 @@ var _ = Describe("Saved Calls DAO", func() {
 					"streetName":      &types.AttributeValueMemberS{Value: "FAKE RD"},
 				},
 				{
-					"partitionKey":    &types.AttributeValueMemberS{Value: "2022/03/23#0124#police"},
+					"sortKey":         &types.AttributeValueMemberS{Value: "2022/03/23#0124#police"},
 					"id":              &types.AttributeValueMemberS{Value: "0124"},
 					"callType":        &types.AttributeValueMemberS{Value: "police"},
 					"callReason":      &types.AttributeValueMemberS{Value: "DOMESTIC"},
@@ -84,7 +84,7 @@ var _ = Describe("Saved Calls DAO", func() {
 			Expect(result).ShouldNot(BeNil())
 			Expect(len(result)).To(Equal(2))
 
-			Expect(result[0].PartitionKey).To(Equal("2022/03/23#0123#police"))
+			Expect(result[0].SortKey).To(Equal("2022/03/23#0123#police"))
 			Expect(result[0].ID).To(Equal("0123"))
 			Expect(result[0].CallType).To(Equal("police"))
 			Expect(result[0].CallReason).To(Equal("SUSPICIOUS SITUATION"))
@@ -99,7 +99,7 @@ var _ = Describe("Saved Calls DAO", func() {
 			Expect(result[0].HouseNumber).To(Equal("22XX"))
 			Expect(result[0].StreetName).To(Equal("FAKE RD"))
 
-			Expect(result[1].PartitionKey).To(Equal("2022/03/23#0124#police"))
+			Expect(result[1].SortKey).To(Equal("2022/03/23#0124#police"))
 			Expect(result[1].ID).To(Equal("0124"))
 			Expect(result[1].CallType).To(Equal("police"))
 			Expect(result[1].CallReason).To(Equal("DOMESTIC"))
@@ -139,7 +139,7 @@ var _ = Describe("Saved Calls DAO", func() {
 				input := *putInput
 				Expect(*input.TableName).To(Equal("SavedCalls"))
 
-				Expect(input.Item["partitionKey"]).To(Equal(&types.AttributeValueMemberS{Value: "2022/03/23#0123#police"}))
+				Expect(input.Item["sortKey"]).To(Equal(&types.AttributeValueMemberS{Value: "2022/03/23#0123#police"}))
 				Expect(input.Item["id"]).To(Equal(&types.AttributeValueMemberS{Value: "0123"}))
 				Expect(input.Item["callType"]).To(Equal(&types.AttributeValueMemberS{Value: "police"}))
 				Expect(input.Item["callReason"]).To(Equal(&types.AttributeValueMemberS{Value: "SUSPICIOUS SITUATION"}))
@@ -159,7 +159,7 @@ var _ = Describe("Saved Calls DAO", func() {
 
 			err := subject.SaveCall(ctx, callToSave)
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(callToSave.PartitionKey).To(Equal(""))
+			Expect(callToSave.SortKey).To(Equal(""))
 		})
 	})
 
@@ -186,9 +186,10 @@ var _ = Describe("Saved Calls DAO", func() {
 			dynamoDBMock.On("UpdateItem", ctx, mock.MatchedBy(func(updateInput *dynamodb.UpdateItemInput) bool {
 				input := *updateInput
 				Expect(*input.TableName).To(Equal("SavedCalls"))
-				Expect(len(input.Key)).To(Equal(1))
+				Expect(len(input.Key)).To(Equal(2))
 				Expect(*input.UpdateExpression).To(Equal("SET #0 = :0, #1 = :1\n"))
-				Expect(input.Key["partitionKey"]).To(Equal(&types.AttributeValueMemberS{Value: "2022/03/23#0123#police"}))
+				Expect(input.Key["streetName"]).To(Equal(&types.AttributeValueMemberS{Value: "FAKE RD"}))
+				Expect(input.Key["sortKey"]).To(Equal(&types.AttributeValueMemberS{Value: "2022/03/23#0123#police"}))
 				Expect(input.ExpressionAttributeNames).To(Equal(map[string]string{
 					"#0": "lastKnownStatus",
 					"#1": "callArrival",
@@ -213,9 +214,10 @@ var _ = Describe("Saved Calls DAO", func() {
 			dynamoDBMock.On("UpdateItem", ctx, mock.MatchedBy(func(updateInput *dynamodb.UpdateItemInput) bool {
 				input := *updateInput
 				Expect(*input.TableName).To(Equal("SavedCalls"))
-				Expect(len(input.Key)).To(Equal(1))
+				Expect(len(input.Key)).To(Equal(2))
 				Expect(*input.UpdateExpression).To(Equal("REMOVE #0\nSET #1 = :0, #2 = :1\n"))
-				Expect(input.Key["partitionKey"]).To(Equal(&types.AttributeValueMemberS{Value: "2022/03/23#0123#police"}))
+				Expect(input.Key["streetName"]).To(Equal(&types.AttributeValueMemberS{Value: "FAKE RD"}))
+				Expect(input.Key["sortKey"]).To(Equal(&types.AttributeValueMemberS{Value: "2022/03/23#0123#police"}))
 				Expect(input.ExpressionAttributeNames).To(Equal(map[string]string{
 					"#0": "isActive",
 					"#1": "lastKnownStatus",
