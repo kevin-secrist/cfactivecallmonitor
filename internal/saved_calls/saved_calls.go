@@ -16,6 +16,7 @@ import (
 const (
 	savedCallsTableName = "SavedCalls"
 	secondaryIndexName  = "ActiveIndex"
+	isActiveString      = "-"
 )
 
 type DynamoDB interface {
@@ -44,7 +45,7 @@ type SavedCall struct {
 	CallReceived    time.Time `dynamodbav:"callReceived,omitempty"`
 	CallArrival     time.Time `dynamodbav:"callArrival,omitempty"`
 	CallResolved    time.Time `dynamodbav:"callResolved,omitempty"`
-	IsActive        bool      `dynamodbav:"isActive"`
+	IsActive        string    `dynamodbav:"isActive,omitempty"`
 	Location        string    `dynamodbav:"location,omitempty"`
 	Area            string    `dynamodbav:"area,omitempty"`
 	Priority        string    `dynamodbav:"priority,omitempty"`
@@ -84,7 +85,7 @@ func NewWithClient(dynamoDB DynamoDB, clock func() time.Time) *SavedCallDataAcce
 }
 
 func (dao *SavedCallDataAccess) GetActiveCalls(ctx context.Context) ([]SavedCall, error) {
-	keyExpression := expression.Key("isActive").Equal(expression.Value(true))
+	keyExpression := expression.Key("isActive").Equal(expression.Value(isActiveString))
 	expr, err := expression.
 		NewBuilder().
 		WithKeyCondition(keyExpression).
@@ -143,23 +144,29 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 	normalizeCall(&activeCall)
 
 	var timestampColumnName string
-	isActive := true
+	var isActive string
 
 	switch activeCall.LastKnownStatus {
+	case "dispatched":
+		isActive = isActiveString
 	case "on scene":
+		isActive = isActiveString
 		timestampColumnName = "callArrival"
 	case "resolved":
-		isActive = false
+		isActive = ""
 		timestampColumnName = "callResolved"
 	default:
 		return fmt.Errorf("unknown status: %s", activeCall.LastKnownStatus)
 	}
 
 	setExpression := expression.
-		Set(expression.Name("lastKnownStatus"), expression.Value(activeCall.LastKnownStatus)).
-		Set(expression.Name(timestampColumnName), expression.Value(dao.clock()))
+		Set(expression.Name("lastKnownStatus"), expression.Value(activeCall.LastKnownStatus))
 
-	if !isActive {
+	if timestampColumnName != "" {
+		setExpression = setExpression.Set(expression.Name(timestampColumnName), expression.Value(dao.clock()))
+	}
+
+	if isActive == "" {
 		setExpression = setExpression.Remove(expression.Name("isActive"))
 	}
 
