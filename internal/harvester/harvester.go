@@ -2,6 +2,7 @@ package harvester
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -96,29 +97,35 @@ func (harvester *Harvester) Harvest(ctx context.Context) error {
 
 	go func() {
 		defer close(policeCallsCh)
+		fmt.Println("Retrieving Police Calls")
 		calls, err := harvester.apiClient.GetPoliceCalls()
 		policeCallsCh <- CallResult{
 			Calls: calls,
 			Err:   err,
 		}
+		fmt.Printf("Found %d Police Calls, %+v\n", len(calls), err)
 	}()
 
 	go func() {
 		defer close(fireCallsCh)
+		fmt.Println("Retrieving Fire Calls")
 		calls, err := harvester.apiClient.GetFireCalls()
 		fireCallsCh <- CallResult{
 			Calls: calls,
 			Err:   err,
 		}
+		fmt.Printf("Found %d Fire Calls, %+v\n", len(calls), err)
 	}()
 
 	go func() {
 		defer close(savedCallsCh)
+		fmt.Println("Retrieving Saved Calls")
 		calls, err := harvester.dao.GetActiveCalls(ctx)
 		savedCallsCh <- SavedCallResult{
 			Calls: calls,
 			Err:   err,
 		}
+		fmt.Printf("Found %d Saved Calls, %+v\n", len(calls), err)
 	}()
 
 	policeCalls, fireCalls, savedCalls := <-policeCallsCh, <-fireCallsCh, <-savedCallsCh
@@ -133,10 +140,19 @@ func (harvester *Harvester) Harvest(ctx context.Context) error {
 		return savedCalls.Err
 	}
 
+	fmt.Println("Updating Police Calls")
 	err := harvester.updateCalls(ctx, "police", policeCalls.Calls, savedCalls.Calls)
 	if err != nil {
+		fmt.Printf("Encountered error while updating police calls, %+v\n", err)
 		return err
 	}
+	fmt.Println("Updating Fire Calls")
 	err = harvester.updateCalls(ctx, "fire", fireCalls.Calls, savedCalls.Calls)
-	return err
+	if err != nil {
+		fmt.Printf("Encountered error while updating fire calls, %+v\n", err)
+		return err
+	}
+
+	fmt.Println("Completed Harvest")
+	return nil
 }
