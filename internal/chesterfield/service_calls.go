@@ -15,10 +15,11 @@ type CallForService []struct {
 	CallReceivedFormatted string     `json:"callReceivedFormatted,omitempty"`
 }
 
-func (client *ChesterfieldAPIClient) getServiceCalls(service string) (CallForService, error) {
+func (client *ChesterfieldAPIClient) getServiceCalls(service string, authHeaderKey string, authHeaderValue string) (CallForService, error) {
 	var result CallForService
 	response, err := client.RestClient.R().
 		SetResult(&result).
+		SetHeader(authHeaderKey, authHeaderValue).
 		SetPathParams(map[string]string{
 			"Service": service,
 		}).
@@ -38,10 +39,10 @@ func (client *ChesterfieldAPIClient) getServiceCalls(service string) (CallForSer
 
 // GET https://api.chesterfield.gov/api/Police/V1.0/Calls/CallsForService
 func (client *ChesterfieldAPIClient) GetPoliceCalls() (CallForService, error) {
-	return client.getServiceCalls("Police")
+	return client.getServiceCalls("Police", "Bearer", client.policeApiKey)
 }
 
 // GET https://api.chesterfield.gov/api/Fire/V1.0/Calls/CallsForService
 func (client *ChesterfieldAPIClient) GetFireCalls() (CallForService, error) {
-	return client.getServiceCalls("Fire")
+	return client.getServiceCalls("Fire", "X-Apikey", client.fireApiKey)
 }

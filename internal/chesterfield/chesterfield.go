@@ -9,8 +9,9 @@ const (
 )
 
 type ChesterfieldAPIClient struct {
-	RestClient *resty.Client
-	apiKey     string
+	RestClient   *resty.Client
+	policeApiKey string
+	fireApiKey   string
 }
 
 type Client interface {
@@ -18,16 +19,15 @@ type Client interface {
 	GetFireCalls() (CallForService, error)
 }
 
-func New(apiKey string) *ChesterfieldAPIClient {
+func New(policeApiKey string, fireApiKey string) *ChesterfieldAPIClient {
 	restClient := resty.New().
 		SetBaseURL(baseURL).
-		SetAuthToken(apiKey).
-		SetHeader("Accept", "application/json").
 		SetHeader("Referer", "https://www.chesterfield.gov/").
 		SetRetryCount(1)
 
 	return &ChesterfieldAPIClient{
-		RestClient: restClient,
-		apiKey:     apiKey,
+		RestClient:   restClient,
+		policeApiKey: policeApiKey,
+		fireApiKey:   fireApiKey,
 	}
 }

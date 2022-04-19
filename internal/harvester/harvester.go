@@ -14,9 +14,9 @@ type Harvester struct {
 	dao       saved_calls.Client
 }
 
-func New(apiKey string, cfg aws.Config) *Harvester {
+func New(policeApiKey string, fireApiKey string, cfg aws.Config) *Harvester {
 	return &Harvester{
-		apiClient: chesterfield.New(apiKey),
+		apiClient: chesterfield.New(policeApiKey, fireApiKey),
 		dao:       saved_calls.New(cfg),
 	}
 }

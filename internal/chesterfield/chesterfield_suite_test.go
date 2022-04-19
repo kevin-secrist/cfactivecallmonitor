@@ -12,7 +12,7 @@ import (
 var subject *chesterfield.ChesterfieldAPIClient
 
 var _ = BeforeSuite(func() {
-	subject = chesterfield.New("testApiKey")
+	subject = chesterfield.New("testPoliceKey", "testFireKey")
 	httpmock.ActivateNonDefault(subject.RestClient.GetClient())
 })
 
