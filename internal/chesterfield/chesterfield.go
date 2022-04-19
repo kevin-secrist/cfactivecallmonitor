@@ -13,9 +13,14 @@ type ChesterfieldAPIClient struct {
 	apiKey     string
 }
 
+type Client interface {
+	GetPoliceCalls() (CallForService, error)
+	GetFireCalls() (CallForService, error)
+}
+
 func New(apiKey string) *ChesterfieldAPIClient {
 	restClient := resty.New().
-		SetHostURL(baseURL).
+		SetBaseURL(baseURL).
 		SetAuthToken(apiKey).
 		SetHeader("Accept", "application/json").
 		SetHeader("Referer", "https://www.chesterfield.gov/").

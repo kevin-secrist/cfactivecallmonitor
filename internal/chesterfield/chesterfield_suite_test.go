@@ -1,11 +1,12 @@
 package chesterfield_test
 
 import (
+	"testing"
+
 	"github.com/jarcoal/httpmock"
 	"github.com/kevin-secrist/cfactivecallmonitor/internal/chesterfield"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
 var subject *chesterfield.ChesterfieldAPIClient

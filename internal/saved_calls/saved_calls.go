@@ -36,6 +36,12 @@ type SavedCallDataAccess struct {
 	clock   func() time.Time
 }
 
+type Client interface {
+	GetActiveCalls(ctx context.Context) ([]SavedCall, error)
+	SaveCall(ctx context.Context, activeCall SavedCall) error
+	UpdateStatus(ctx context.Context, activeCall SavedCall) error
+}
+
 type SavedCall struct {
 	SortKey         string    `dynamodbav:"sortKey,omitempty"`
 	ID              string    `dynamodbav:"id,omitempty"`
