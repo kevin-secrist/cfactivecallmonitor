@@ -68,6 +68,13 @@ func normalizeCall(savedCall *SavedCall) {
 			savedCall.CallType,
 		}, "#",
 	)
+
+	if savedCall.LastKnownStatus != "resolved" {
+		savedCall.IsActive = isActiveString
+	} else {
+		savedCall.IsActive = ""
+	}
+
 	savedCall.CallReceived = savedCall.CallReceived.UTC()
 	savedCall.CallArrival = savedCall.CallArrival.UTC()
 	savedCall.CallResolved = savedCall.CallResolved.UTC()
@@ -150,16 +157,13 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 	normalizeCall(&activeCall)
 
 	var timestampColumnName string
-	var isActive string
 
 	switch activeCall.LastKnownStatus {
 	case "dispatched":
-		isActive = isActiveString
+		timestampColumnName = ""
 	case "on scene":
-		isActive = isActiveString
 		timestampColumnName = "callArrival"
 	case "resolved":
-		isActive = ""
 		timestampColumnName = "callResolved"
 	default:
 		return fmt.Errorf("unknown status: %s", activeCall.LastKnownStatus)
@@ -172,7 +176,7 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 		setExpression = setExpression.Set(expression.Name(timestampColumnName), expression.Value(dao.clock()))
 	}
 
-	if isActive == "" {
+	if activeCall.IsActive == "" {
 		setExpression = setExpression.Remove(expression.Name("isActive"))
 	}
 
