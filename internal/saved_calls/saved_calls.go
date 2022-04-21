@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+
+	"github.com/kevin-secrist/cfactivecallmonitor/internal/chesterfield"
 )
 
 const (
@@ -63,7 +65,7 @@ func normalizeCall(savedCall *SavedCall) {
 	savedCall.LastKnownStatus = strings.ToLower(savedCall.LastKnownStatus)
 	savedCall.SortKey = strings.Join(
 		[]string{
-			savedCall.CallReceived.Format("2006/01/02"),
+			savedCall.CallReceived.In(chesterfield.LocalTime).Format("2006/01/02"),
 			savedCall.ID,
 			savedCall.CallType,
 		}, "#",

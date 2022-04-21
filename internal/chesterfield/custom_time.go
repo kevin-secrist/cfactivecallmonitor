@@ -12,7 +12,7 @@ type CustomTime struct {
 
 const ctLayout = "1/2/2006 3:04:05 PM"
 
-var location, _ = time.LoadLocation("America/New_York")
+var LocalTime, _ = time.LoadLocation("America/New_York")
 
 func (ct *CustomTime) UnmarshalJSON(b []byte) (err error) {
 	s := strings.Trim(string(b), "\"")
@@ -20,7 +20,7 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) (err error) {
 		ct.Time = time.Time{}
 		return
 	}
-	ct.Time, err = time.ParseInLocation(ctLayout, s, location)
+	ct.Time, err = time.ParseInLocation(ctLayout, s, LocalTime)
 	return
 }
 
