@@ -20,6 +20,10 @@ jobs:
       - run: go build -v -o build/bin ./...
       - run: go get github.com/onsi/ginkgo/v2/ginkgo
       - run: go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --race --trace --fail-on-pending --keep-going
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build/bin
 
   terraform:
     name: "Terraform Deployment"
@@ -41,6 +45,10 @@ jobs:
       - run: terraform fmt -check
       - run: terraform init
       - run: terraform validate -no-color
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: build/bin
       - run: terraform plan -no-color
         if: github.event_name == 'pull_request'
       - run: terraform apply -auto-approve
