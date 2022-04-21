@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+
+	"github.com/kevin-secrist/cfactivecallmonitor/internal/chesterfield"
 )
 
 const (
@@ -36,6 +38,12 @@ type SavedCallDataAccess struct {
 	clock   func() time.Time
 }
 
+type Client interface {
+	GetActiveCalls(ctx context.Context) ([]SavedCall, error)
+	SaveCall(ctx context.Context, activeCall SavedCall) error
+	UpdateStatus(ctx context.Context, activeCall SavedCall) error
+}
+
 type SavedCall struct {
 	SortKey         string    `dynamodbav:"sortKey,omitempty"`
 	ID              string    `dynamodbav:"id,omitempty"`
@@ -57,11 +65,18 @@ func normalizeCall(savedCall *SavedCall) {
 	savedCall.LastKnownStatus = strings.ToLower(savedCall.LastKnownStatus)
 	savedCall.SortKey = strings.Join(
 		[]string{
-			savedCall.CallReceived.Format("2006/01/02"),
+			savedCall.CallReceived.In(chesterfield.LocalTime).Format("2006/01/02"),
 			savedCall.ID,
 			savedCall.CallType,
 		}, "#",
 	)
+
+	if savedCall.LastKnownStatus != "resolved" {
+		savedCall.IsActive = isActiveString
+	} else {
+		savedCall.IsActive = ""
+	}
+
 	savedCall.CallReceived = savedCall.CallReceived.UTC()
 	savedCall.CallArrival = savedCall.CallArrival.UTC()
 	savedCall.CallResolved = savedCall.CallResolved.UTC()
@@ -144,16 +159,13 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 	normalizeCall(&activeCall)
 
 	var timestampColumnName string
-	var isActive string
 
 	switch activeCall.LastKnownStatus {
 	case "dispatched":
-		isActive = isActiveString
+		timestampColumnName = ""
 	case "on scene":
-		isActive = isActiveString
 		timestampColumnName = "callArrival"
 	case "resolved":
-		isActive = ""
 		timestampColumnName = "callResolved"
 	default:
 		return fmt.Errorf("unknown status: %s", activeCall.LastKnownStatus)
@@ -166,7 +178,7 @@ func (dao *SavedCallDataAccess) UpdateStatus(ctx context.Context, activeCall Sav
 		setExpression = setExpression.Set(expression.Name(timestampColumnName), expression.Value(dao.clock()))
 	}
 
-	if isActive == "" {
+	if activeCall.IsActive == "" {
 		setExpression = setExpression.Remove(expression.Name("isActive"))
 	}
 

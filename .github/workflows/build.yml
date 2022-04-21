@@ -15,10 +15,26 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.18
+      - uses: actions/cache@v3
+        id: cache-go-packages
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - run: go mod download
+        if: steps.cache-go-packages.outputs.cache-hit != 'true'
       - run: go vet ./...
-      - run: go build -v ./...
+      - run: mkdir -p build/bin
+      - run: go build -v -o build/bin ./...
       - run: go get github.com/onsi/ginkgo/v2/ginkgo
       - run: go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --race --trace --fail-on-pending --keep-going
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build/bin
 
   terraform:
     name: "Terraform Deployment"
@@ -30,6 +46,8 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      TF_VAR_CPD_API_KEY: ${{ secrets.CPD_API_KEY }}
+      TF_VAR_CFD_API_KEY: ${{ secrets.CFD_API_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: hashicorp/setup-terraform@v1
@@ -38,6 +56,10 @@ jobs:
       - run: terraform fmt -check
       - run: terraform init
       - run: terraform validate -no-color
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: build/bin
       - run: terraform plan -no-color
         if: github.event_name == 'pull_request'
       - run: terraform apply -auto-approve

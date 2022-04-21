@@ -72,7 +72,7 @@ var _ = Describe("Chesterfield API Client", func() {
 			},
 		}))
 	})
-	It("passes correct headers", func() {
+	It("passes correct headers for police calls", func() {
 		httpmock.RegisterResponder("GET", policeCallUrl,
 			func(req *http.Request) (*http.Response, error) {
 				resp, err := httpmock.NewJsonResponse(200, httpmock.File("sample_responses/police_calls.json"))
@@ -80,8 +80,7 @@ var _ = Describe("Chesterfield API Client", func() {
 					return nil, err
 				}
 
-				Expect(req.Header["Accept"][0]).To(Equal("application/json"))
-				Expect(req.Header["Authorization"][0]).To(Equal("Bearer testApiKey"))
+				Expect(req.Header["Bearer"][0]).To(Equal("testPoliceKey"))
 				Expect(req.Header["Referer"][0]).To(Equal("https://www.chesterfield.gov/"))
 
 				return resp, nil
@@ -93,6 +92,27 @@ var _ = Describe("Chesterfield API Client", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(result).ShouldNot(BeNil())
 		Expect(len(result)).To(Equal(2))
+	})
+	It("passes correct headers for fire calls", func() {
+		httpmock.RegisterResponder("GET", fireCallUrl,
+			func(req *http.Request) (*http.Response, error) {
+				resp, err := httpmock.NewJsonResponse(200, httpmock.File("sample_responses/fire_calls.json"))
+				if err != nil {
+					return nil, err
+				}
+
+				Expect(req.Header["X-Apikey"][0]).To(Equal("testFireKey"))
+				Expect(req.Header["Referer"][0]).To(Equal("https://www.chesterfield.gov/"))
+
+				return resp, nil
+			},
+		)
+
+		result, err := subject.GetFireCalls()
+
+		Expect(err).ShouldNot(HaveOccurred())
+		Expect(result).ShouldNot(BeNil())
+		Expect(len(result)).To(Equal(1))
 	})
 	It("returns error on non-successful status code", func() {
 		responder := httpmock.NewStringResponder(500, "")
