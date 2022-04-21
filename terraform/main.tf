@@ -129,10 +129,10 @@ resource "aws_iam_role" "harvester" {
         Service = "lambda.amazonaws.com"
       }
     }]
-
-    managed_policy_arns = [
-      "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-      aws_iam_policy.harvester_data_access_policy.arn
-    ]
   })
+
+  managed_policy_arns = [
+    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    aws_iam_policy.harvester_data_access_policy.arn
+  ]
 }
