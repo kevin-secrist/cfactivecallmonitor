@@ -110,8 +110,11 @@ resource "aws_iam_policy" "harvester_data_access_policy" {
         Action = [
           "dynamodb:*"
         ],
-        Effect   = "Allow",
-        Resource = aws_dynamodb_table.savedcalls.arn
+        Effect = "Allow",
+        Resource = [
+          aws_dynamodb_table.savedcalls.arn,
+          "${aws_dynamodb_table.savedcalls.arn}/*"
+        ]
       }
     ]
   })
