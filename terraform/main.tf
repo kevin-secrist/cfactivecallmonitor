@@ -139,3 +139,23 @@ resource "aws_iam_role" "harvester" {
     aws_iam_policy.harvester_data_access_policy.arn
   ]
 }
+
+resource "aws_cloudwatch_event_rule" "every_five_minutes" {
+  name                = "every-five-minutes"
+  description         = "Fires every five minutes"
+  schedule_expression = "rate(5 minutes)"
+}
+
+resource "aws_cloudwatch_event_target" "trigger_harvestcalls" {
+  rule      = aws_cloudwatch_event_rule.every_five_minutes.arn
+  target_id = "harvestcalls"
+  arn       = aws_lambda_function.harvestcalls.arn
+}
+
+resource "aws_lambda_permission" "trigger_harvestcalls_permission" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.harvestcalls.arn
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.every_five_minutes.arn
+}
