@@ -2,6 +2,8 @@ package harvester_test
 
 import (
 	"context"
+	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -55,10 +57,9 @@ var localLocation, _ = time.LoadLocation("America/New_York")
 var policeCall chesterfield.CallForService
 var fireCall chesterfield.CallForService
 var savedCall saved_calls.SavedCall
-var stdoutHandle *os.File
+
 var _ = BeforeSuite(func() {
-	stdoutHandle = os.Stdout
-	os.Stdout, _ = os.Open(os.DevNull)
+	log.SetOutput(ioutil.Discard)
 })
 
 var _ = BeforeEach(func() {
@@ -109,7 +110,7 @@ var _ = BeforeEach(func() {
 })
 
 var _ = AfterSuite(func() {
-	os.Stdout = stdoutHandle
+	log.SetOutput(os.Stdout)
 })
 
 func TestSavedCalls(t *testing.T) {
