@@ -75,14 +75,6 @@ data "archive_file" "harvestcalls" {
   output_path      = "../build/bin/harvestcalls.zip"
 }
 
-variable "CPD_API_KEY" {
-  type = string
-}
-
-variable "CFD_API_KEY" {
-  type = string
-}
-
 resource "aws_lambda_function" "harvestcalls" {
   function_name    = "HarvestCalls"
   description      = "Pulls active Police/Fire calls from chesterfield.gov and stores them"
@@ -177,19 +169,6 @@ data "archive_file" "active_call_notifier" {
   output_path      = "../build/bin/active_call_notifier.zip"
 }
 
-variable "SMS_TO" {
-  type = string
-}
-variable "TWILIO_ACCOUNT_SID" {
-  type = string
-}
-variable "TWILIO_API_KEY" {
-  type = string
-}
-variable "TWILIO_API_SECRET" {
-  type = string
-}
-
 resource "aws_lambda_function" "active_call_notifier" {
   function_name    = "ActiveCallNotifier"
   description      = "Sends SMS Notifications from Call Events"
@@ -256,4 +235,24 @@ resource "aws_iam_role" "active_call_notifier" {
     local.lambda_default_role_arn,
     aws_iam_policy.active_call_notifier.arn
   ]
+}
+
+resource "aws_lambda_event_source_mapping" "active_call_notifier_trigger" {
+  event_source_arn  = aws_dynamodb_table.savedcalls.stream_arn
+  function_name     = aws_lambda_function.active_call_notifier.arn
+  starting_position = "TRIM_HORIZON"
+
+  maximum_batching_window_in_seconds = 10
+  maximum_record_age_in_seconds      = 3600
+  maximum_retry_attempts             = 5
+
+  filter_criteria {
+    filter {
+      pattern = jsonencode({
+        "data" : {
+          "streetName" : var.STREET_NAMES
+        }
+      })
+    }
+  }
 }
