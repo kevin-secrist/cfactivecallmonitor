@@ -147,7 +147,7 @@ resource "aws_cloudwatch_event_rule" "every_five_minutes" {
 }
 
 resource "aws_cloudwatch_event_target" "trigger_harvestcalls" {
-  rule      = aws_cloudwatch_event_rule.every_five_minutes.arn
+  rule      = aws_cloudwatch_event_rule.every_five_minutes.name
   target_id = "harvestcalls"
   arn       = aws_lambda_function.harvestcalls.arn
 }
