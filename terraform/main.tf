@@ -257,3 +257,27 @@ resource "aws_iam_role" "active_call_notifier" {
     aws_iam_policy.active_call_notifier.arn
   ]
 }
+
+variable "STREET_NAMES" {
+  type = list(string)
+}
+
+resource "aws_lambda_event_source_mapping" "active_call_notifier_trigger" {
+  event_source_arn  = aws_dynamodb_table.savedcalls.stream_arn
+  function_name     = aws_lambda_function.active_call_notifier.arn
+  starting_position = "TRIM_HORIZON"
+
+  maximum_batching_window_in_seconds = 10
+  maximum_record_age_in_seconds      = 3600
+  maximum_retry_attempts             = 5
+
+  filter_criteria {
+    filter {
+      pattern = jsonencode({
+        "data" : {
+          "streetName" : var.STREET_NAMES
+        }
+      })
+    }
+  }
+}
