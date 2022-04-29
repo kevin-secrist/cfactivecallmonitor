@@ -182,6 +182,7 @@ resource "aws_lambda_function" "active_call_notifier" {
 
   environment {
     variables = {
+      SMS_FROM           = var.SMS_FROM
       SMS_TO             = var.SMS_TO
       TWILIO_ACCOUNT_SID = var.TWILIO_ACCOUNT_SID
       TWILIO_API_KEY     = var.TWILIO_API_KEY

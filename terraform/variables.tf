@@ -6,6 +6,10 @@ variable "CFD_API_KEY" {
   type = string
 }
 
+variable "SMS_FROM" {
+  type = string
+}
+
 variable "SMS_TO" {
   type = string
 }

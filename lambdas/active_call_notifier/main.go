@@ -17,9 +17,11 @@ import (
 
 var twilioClient *twilio.RestClient
 var toNumber string
+var fromNumber string
 
 func init() {
 	toNumber = os.Getenv("SMS_TO")
+	fromNumber = os.Getenv("SMS_FROM")
 	accountSid := os.Getenv("TWILIO_ACCOUNT_SID")
 	apiKey := os.Getenv("TWILIO_API_KEY")
 	apiSecret := os.Getenv("TWILIO_API_SECRET")
