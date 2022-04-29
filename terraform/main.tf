@@ -166,3 +166,91 @@ resource "aws_lambda_permission" "trigger_harvestcalls_permission" {
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.every_five_minutes.arn
 }
+
+data "archive_file" "active_call_notifier" {
+  type             = "zip"
+  source_file      = "../build/bin/active_call_notifier"
+  output_file_mode = "0666"
+  output_path      = "../build/bin/active_call_notifier.zip"
+}
+
+variable "SMS_TO" {
+  type = string
+}
+variable "TWILIO_ACCOUNT_SID" {
+  type = string
+}
+variable "TWILIO_API_KEY" {
+  type = string
+}
+variable "TWILIO_API_SECRET" {
+  type = string
+}
+
+resource "aws_lambda_function" "active_call_notifier" {
+  function_name    = "ActiveCallNotifier"
+  description      = "Sends SMS Notifications from Call Events"
+  filename         = data.archive_file.active_call_notifier.output_path
+  memory_size      = 128
+  runtime          = "go1.x"
+  handler          = "active_call_notifier"
+  role             = local.lambda_default_role_arn
+  source_code_hash = data.archive_file.active_call_notifier.output_base64sha256
+  timeout          = 60
+
+  environment {
+    variables = {
+      SMS_TO             = var.SMS_TO
+      TWILIO_ACCOUNT_SID = var.TWILIO_ACCOUNT_SID
+      TWILIO_API_KEY     = var.TWILIO_API_KEY
+      TWILIO_API_SECRET  = var.TWILIO_API_SECRET
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_group" "active_call_notifier" {
+  name              = "/aws/lambda/${aws_lambda_function.active_call_notifier.function_name}"
+  retention_in_days = 7
+}
+
+resource "aws_iam_policy" "active_call_notifier" {
+  name = "ActiveCallNotifier"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "dynamodb:DescribeStream",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:ListStreams"
+        ],
+        Effect = "Allow",
+        Resource = [
+          "${aws_dynamodb_table.savedcalls.arn}/stream/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "active_call_notifier" {
+  name = "ActiveCallNotifier"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+
+  managed_policy_arns = [
+    local.lambda_default_role_arn,
+    aws_iam_policy.active_call_notifier.arn
+  ]
+}
