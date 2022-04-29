@@ -19,6 +19,10 @@ provider "aws" {
   region = "us-east-1"
 }
 
+locals {
+  lambda_default_role_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
 resource "aws_dynamodb_table" "savedcalls" {
   name           = "SavedCalls"
   billing_mode   = "PROVISIONED"
@@ -138,7 +142,7 @@ resource "aws_iam_role" "harvester" {
   })
 
   managed_policy_arns = [
-    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+    local.lambda_default_role_arn,
     aws_iam_policy.harvester_data_access_policy.arn
   ]
 }
