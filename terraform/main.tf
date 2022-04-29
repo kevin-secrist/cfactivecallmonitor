@@ -249,8 +249,12 @@ resource "aws_lambda_event_source_mapping" "active_call_notifier_trigger" {
   filter_criteria {
     filter {
       pattern = jsonencode({
-        "data" : {
-          "streetName" : var.STREET_NAMES
+        "dynamodb" : {
+          "NewImage" : {
+            "streetName" : {
+              "S" : var.STREET_NAMES
+            }
+          }
         }
       })
     }
