@@ -197,7 +197,7 @@ resource "aws_lambda_function" "active_call_notifier" {
   memory_size      = 128
   runtime          = "go1.x"
   handler          = "active_call_notifier"
-  role             = local.lambda_default_role_arn
+  role             = aws_iam_role.active_call_notifier.arn
   source_code_hash = data.archive_file.active_call_notifier.output_base64sha256
   timeout          = 60
 
