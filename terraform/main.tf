@@ -31,6 +31,9 @@ resource "aws_dynamodb_table" "savedcalls" {
   hash_key       = "streetName"
   range_key      = "sortKey"
 
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
+
   attribute {
     name = "streetName"
     type = "S"
