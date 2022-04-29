@@ -48,6 +48,10 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       TF_VAR_CPD_API_KEY: ${{ secrets.CPD_API_KEY }}
       TF_VAR_CFD_API_KEY: ${{ secrets.CFD_API_KEY }}
+      TF_VAR_SMS_TO: ${{ secrets.SMS_TO }}
+      TF_VAR_TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+      TF_VAR_TWILIO_API_KEY: ${{ secrets.TWILIO_API_KEY }}
+      TF_VAR_TWILIO_API_SECRET: ${{ secrets.TWILIO_API_SECRET }}
     steps:
       - uses: actions/checkout@v3
       - uses: hashicorp/setup-terraform@v1
