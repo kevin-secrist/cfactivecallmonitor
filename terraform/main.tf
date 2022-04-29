@@ -108,7 +108,10 @@ resource "aws_iam_policy" "harvester_data_access_policy" {
     Statement = [
       {
         Action = [
-          "dynamodb:*"
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
         ],
         Effect = "Allow",
         Resource = [
