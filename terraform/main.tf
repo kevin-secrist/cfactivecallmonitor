@@ -75,14 +75,6 @@ data "archive_file" "harvestcalls" {
   output_path      = "../build/bin/harvestcalls.zip"
 }
 
-variable "CPD_API_KEY" {
-  type = string
-}
-
-variable "CFD_API_KEY" {
-  type = string
-}
-
 resource "aws_lambda_function" "harvestcalls" {
   function_name    = "HarvestCalls"
   description      = "Pulls active Police/Fire calls from chesterfield.gov and stores them"
@@ -177,19 +169,6 @@ data "archive_file" "active_call_notifier" {
   output_path      = "../build/bin/active_call_notifier.zip"
 }
 
-variable "SMS_TO" {
-  type = string
-}
-variable "TWILIO_ACCOUNT_SID" {
-  type = string
-}
-variable "TWILIO_API_KEY" {
-  type = string
-}
-variable "TWILIO_API_SECRET" {
-  type = string
-}
-
 resource "aws_lambda_function" "active_call_notifier" {
   function_name    = "ActiveCallNotifier"
   description      = "Sends SMS Notifications from Call Events"
@@ -256,10 +235,6 @@ resource "aws_iam_role" "active_call_notifier" {
     local.lambda_default_role_arn,
     aws_iam_policy.active_call_notifier.arn
   ]
-}
-
-variable "STREET_NAMES" {
-  type = list(string)
 }
 
 resource "aws_lambda_event_source_mapping" "active_call_notifier_trigger" {
