@@ -63,7 +63,7 @@ func SendSms(message string) error {
 	params.SetFrom(fromNumber)
 	params.SetBody(message)
 
-	_, err := twilioClient.ApiV2010.CreateMessage(params)
+	_, err := twilioClient.Api.CreateMessage(params)
 	return err
 }
 
