@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.8"
+      version = "~> 5.0"
     }
   }
 
@@ -70,7 +70,7 @@ resource "aws_dynamodb_table" "savedcalls" {
 
 data "archive_file" "harvestcalls" {
   type             = "zip"
-  source_file      = "../build/bin/harvestcalls"
+  source_file      = "../build/bin/harvestcalls/bootstrap"
   output_file_mode = "0666"
   output_path      = "../build/bin/harvestcalls.zip"
 }
@@ -80,8 +80,8 @@ resource "aws_lambda_function" "harvestcalls" {
   description      = "Pulls active Police/Fire calls from chesterfield.gov and stores them"
   filename         = data.archive_file.harvestcalls.output_path
   memory_size      = 128
-  runtime          = "go1.x"
-  handler          = "harvestcalls"
+  runtime          = "provided.al2023"
+  handler          = "bootstrap"
   role             = aws_iam_role.harvester.arn
   source_code_hash = data.archive_file.harvestcalls.output_base64sha256
   timeout          = 15
@@ -164,7 +164,7 @@ resource "aws_lambda_permission" "trigger_harvestcalls_permission" {
 
 data "archive_file" "active_call_notifier" {
   type             = "zip"
-  source_file      = "../build/bin/active_call_notifier"
+  source_file      = "../build/bin/active_call_notifier/bootstrap"
   output_file_mode = "0666"
   output_path      = "../build/bin/active_call_notifier.zip"
 }
@@ -174,8 +174,8 @@ resource "aws_lambda_function" "active_call_notifier" {
   description      = "Sends SMS Notifications from Call Events"
   filename         = data.archive_file.active_call_notifier.output_path
   memory_size      = 128
-  runtime          = "go1.x"
-  handler          = "active_call_notifier"
+  runtime          = "provided.al2023"
+  handler          = "bootstrap"
   role             = aws_iam_role.active_call_notifier.arn
   source_code_hash = data.archive_file.active_call_notifier.output_base64sha256
   timeout          = 60
