@@ -11,17 +11,18 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: 1.18
+          go-version: "stable"
       - run: go mod download
       - run: go vet ./...
       - run: mkdir -p build/bin
-      - run: go build -v -o build/bin ./...
+      - run: go build -tags lambda.norpc -v -o build/bin/harvestcalls/bootstrap lambdas/harvestcalls/main.go
+      - run: go build -tags lambda.norpc -v -o build/bin/active_call_notifier/bootstrap lambdas/active_call_notifier/main.go
       - run: go get github.com/onsi/ginkgo/v2/ginkgo
       - run: go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --race --trace --fail-on-pending --keep-going
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build
           path: build/bin
@@ -45,14 +46,14 @@ jobs:
       TF_VAR_TWILIO_API_SECRET: ${{ secrets.TWILIO_API_SECRET }}
       TF_VAR_STREET_NAMES: ${{ secrets.STREET_NAMES }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: hashicorp/setup-terraform@v1
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.1.7
       - run: terraform fmt -check
       - run: terraform init
       - run: terraform validate -no-color
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build
           path: build/bin
