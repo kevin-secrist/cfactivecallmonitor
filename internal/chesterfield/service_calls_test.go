@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	policeCallUrl = "https://api.chesterfield.gov/api/Police/V1.0/Calls/CallsForService"
+	policeCallUrl = "https://api.chesterfield.gov/api/Police/V1.1/Calls/CallsForService"
 	fireCallUrl   = "https://api.chesterfield.gov/api/Fire/V1.0/Calls/CallsForService"
 )
 
@@ -80,7 +80,7 @@ var _ = Describe("Chesterfield API Client", func() {
 					return nil, err
 				}
 
-				Expect(req.Header["Bearer"][0]).To(Equal("testPoliceKey"))
+				Expect(req.Header["X-Apikey"][0]).To(Equal("testPoliceKey"))
 				Expect(req.Header["Referer"][0]).To(Equal("https://www.chesterfield.gov/"))
 
 				return resp, nil
