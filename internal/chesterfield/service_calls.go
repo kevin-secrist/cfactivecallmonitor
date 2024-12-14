@@ -15,15 +15,16 @@ type CallForService []struct {
 	CallReceivedFormatted string     `json:"callReceivedFormatted,omitempty"`
 }
 
-func (client *ChesterfieldAPIClient) getServiceCalls(service string, authHeaderKey string, authHeaderValue string) (CallForService, error) {
+func (client *ChesterfieldAPIClient) getServiceCalls(service string, version string, authHeaderKey string, authHeaderValue string) (CallForService, error) {
 	var result CallForService
 	response, err := client.RestClient.R().
 		SetResult(&result).
 		SetHeader(authHeaderKey, authHeaderValue).
 		SetPathParams(map[string]string{
 			"Service": service,
+			"Version": version,
 		}).
-		Get("{Service}/V1.0/Calls/CallsForService")
+		Get("{Service}/{Version}/Calls/CallsForService")
 
 	if err != nil {
 		return nil, err
@@ -37,12 +38,12 @@ func (client *ChesterfieldAPIClient) getServiceCalls(service string, authHeaderK
 	return *slice, nil
 }
 
-// GET https://api.chesterfield.gov/api/Police/V1.0/Calls/CallsForService
+// GET https://api.chesterfield.gov/api/Police/V1.1/Calls/CallsForService
 func (client *ChesterfieldAPIClient) GetPoliceCalls() (CallForService, error) {
-	return client.getServiceCalls("Police", "Bearer", client.policeApiKey)
+	return client.getServiceCalls("Police", "V1.1", "X-Apikey", client.policeApiKey)
 }
 
 // GET https://api.chesterfield.gov/api/Fire/V1.0/Calls/CallsForService
 func (client *ChesterfieldAPIClient) GetFireCalls() (CallForService, error) {
-	return client.getServiceCalls("Fire", "X-Apikey", client.fireApiKey)
+	return client.getServiceCalls("Fire", "V1.0", "X-Apikey", client.fireApiKey)
 }
