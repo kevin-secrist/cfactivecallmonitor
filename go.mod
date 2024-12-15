@@ -14,7 +14,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.22.0
 	github.com/onsi/gomega v1.34.2
 	github.com/stretchr/testify v1.8.4
-	github.com/twilio/twilio-go v1.16.0
+	github.com/twilio/twilio-go v1.23.8
 )
 
 require (
