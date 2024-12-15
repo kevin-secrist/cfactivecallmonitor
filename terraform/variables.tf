@@ -37,3 +37,8 @@ variable "STREET_NAMES" {
   type      = list(string)
   sensitive = true
 }
+
+variable "OPS_EMAIL" {
+  type      = string
+  sensitive = true
+}

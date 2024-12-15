@@ -23,6 +23,38 @@ locals {
   lambda_default_role_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_sns_topic" "ops_critical" {
+  name = "ops-critical"
+}
+
+resource "aws_sns_topic_policy" "cloudwatch_policy" {
+  arn    = aws_sns_topic.ops_critical.arn
+  policy = data.aws_iam_policy_document.cloudwatch_policy.json
+}
+
+data "aws_iam_policy_document" "cloudwatch_policy" {
+  statement {
+    sid     = "ops-sns-allow-cloudwatc"
+    effect  = "Allow"
+    actions = ["sns:Publish"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudwatch.amazonaws.com"]
+    }
+
+    resources = [
+      aws_sns_topic.ops_critical.arn,
+    ]
+  }
+}
+
+resource "aws_sns_topic_subscription" "email_alerts" {
+  topic_arn = aws_sns_topic.ops_critical.arn
+  protocol  = "email"
+  endpoint  = var.OPS_EMAIL
+}
+
 resource "aws_dynamodb_table" "savedcalls" {
   name           = "SavedCalls"
   billing_mode   = "PROVISIONED"
@@ -91,6 +123,28 @@ resource "aws_lambda_function" "harvestcalls" {
       CPD_API_KEY = var.CPD_API_KEY
       CFD_API_KEY = var.CFD_API_KEY
     }
+  }
+}
+
+# this should only go into an alarm state if the lambda
+# is totally broken in some way
+resource "aws_cloudwatch_metric_alarm" "harvest_lambda_errors" {
+  alarm_name          = "harvest-lambda-errors"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 6
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 3600
+  statistic           = "Sum"
+  threshold           = 15
+  treat_missing_data  = "notBreaching"
+  alarm_description   = "Monitors for errors in the harvest lambda"
+  alarm_actions = [
+    aws_sns_topic.ops_critical.arn
+  ]
+
+  dimensions = {
+    FunctionName = aws_lambda_function.harvestcalls.function_name
   }
 }
 
@@ -188,6 +242,27 @@ resource "aws_lambda_function" "active_call_notifier" {
       TWILIO_API_KEY     = var.TWILIO_API_KEY
       TWILIO_API_SECRET  = var.TWILIO_API_SECRET
     }
+  }
+}
+
+# the notifier should never fail, this is always worth looking at
+resource "aws_cloudwatch_metric_alarm" "notifier_lambda_errors" {
+  alarm_name          = "notifier-lambda-errors"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 1800
+  statistic           = "Sum"
+  treat_missing_data  = "notBreaching"
+  threshold           = 3
+  alarm_description   = "Monitors for errors in the notifier lambda"
+  alarm_actions = [
+    aws_sns_topic.ops_critical.arn
+  ]
+
+  dimensions = {
+    FunctionName = aws_lambda_function.active_call_notifier.function_name
   }
 }
 
