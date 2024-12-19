@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     name: Build and Test
@@ -29,14 +33,13 @@ jobs:
 
   terraform:
     name: "Terraform Deployment"
+    environment: prod
     needs: build
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: terraform
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       TF_VAR_CPD_API_KEY: ${{ secrets.CPD_API_KEY }}
       TF_VAR_CFD_API_KEY: ${{ secrets.CFD_API_KEY }}
       TF_VAR_SMS_FROM: ${{ secrets.SMS_FROM }}
@@ -48,6 +51,11 @@ jobs:
       TF_VAR_OPS_EMAIL: ${{ secrets.OPS_EMAIL }}
     steps:
       - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          mask-aws-account-id: true
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_NUMBER }}:role/cfactivecallmonitor-ci
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.10
