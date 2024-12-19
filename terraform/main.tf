@@ -34,7 +34,7 @@ resource "aws_sns_topic_policy" "cloudwatch_policy" {
 
 data "aws_iam_policy_document" "cloudwatch_policy" {
   statement {
-    sid     = "ops-sns-allow-cloudwatc"
+    sid     = "OpsSNSAllowCloudWatch"
     effect  = "Allow"
     actions = ["sns:Publish"]
 
@@ -189,8 +189,11 @@ resource "aws_iam_role" "harvester" {
       }
     }]
   })
+}
 
-  managed_policy_arns = [
+resource "aws_iam_role_policy_attachments_exclusive" "harvester" {
+  role_name = aws_iam_role.harvester.arn
+  policy_arns = [
     local.lambda_default_role_arn,
     aws_iam_policy.harvester_data_access_policy.arn
   ]
@@ -306,8 +309,11 @@ resource "aws_iam_role" "active_call_notifier" {
       }
     }]
   })
+}
 
-  managed_policy_arns = [
+resource "aws_iam_role_policy_attachments_exclusive" "active_call_notifier" {
+  role_name = aws_iam_role.harvester.arn
+  policy_arns = [
     local.lambda_default_role_arn,
     aws_iam_policy.active_call_notifier.arn
   ]
