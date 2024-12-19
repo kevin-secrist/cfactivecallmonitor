@@ -9,6 +9,6 @@ updates:
     schedule:
       interval: monthly
   - package-ecosystem: terraform
-    directory: /
+    directory: /terraform
     schedule:
       interval: monthly
