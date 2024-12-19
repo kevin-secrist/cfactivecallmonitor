@@ -3,7 +3,7 @@ module github.com/kevin-secrist/cfactivecallmonitor
 go 1.23
 
 require (
-	github.com/aws/aws-lambda-go v1.43.0
+	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go-v2 v1.32.6
 	github.com/aws/aws-sdk-go-v2/config v1.26.2
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.21
