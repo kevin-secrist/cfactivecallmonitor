@@ -34,7 +34,7 @@ resource "aws_sns_topic_policy" "cloudwatch_policy" {
 
 data "aws_iam_policy_document" "cloudwatch_policy" {
   statement {
-    sid     = "ops-sns-allow-cloudwatc"
+    sid     = "OpsSNSAllowCloudWatch"
     effect  = "Allow"
     actions = ["sns:Publish"]
 
