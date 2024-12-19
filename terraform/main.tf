@@ -312,7 +312,7 @@ resource "aws_iam_role" "active_call_notifier" {
 }
 
 resource "aws_iam_role_policy_attachments_exclusive" "active_call_notifier" {
-  role_name = aws_iam_role.harvester.arn
+  role_name = aws_iam_role.active_call_notifier.arn
   policy_arns = [
     local.lambda_default_role_arn,
     aws_iam_policy.active_call_notifier.arn
