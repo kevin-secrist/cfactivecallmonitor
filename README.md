@@ -30,9 +30,8 @@ sequenceDiagram
 
 ## To Do
 
-* Monitoring
 * GraphQL API and UI for visualizing service calls
-* More flexible subscription model, via SNS
+* More flexible subscription model, via SNS or EventBridge
   * Multi-user support
   * Backend store for subscriptions and users
 * End-user configurable subscriptions, with UI/API
