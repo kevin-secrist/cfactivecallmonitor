@@ -24,8 +24,7 @@ jobs:
       - run: mkdir -p build/bin
       - run: go build -tags "lambda.norpc timetzdata" -v -o build/bin/harvestcalls/bootstrap lambdas/harvestcalls/main.go
       - run: go build -tags "lambda.norpc timetzdata" -v -o build/bin/active_call_notifier/bootstrap lambdas/active_call_notifier/main.go
-      - run: go get github.com/onsi/ginkgo/v2/ginkgo
-      - run: go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --race --trace --fail-on-pending --keep-going
+      - run: go run github.com/onsi/ginkgo/v2/ginkgo -github-output -r -randomize-all -randomize-suites -race -trace -fail-on-pending -keep-going -poll-progress-after=10s -poll-progress-interval=10s
       - uses: actions/upload-artifact@v4
         with:
           name: build
