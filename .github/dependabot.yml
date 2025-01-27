@@ -3,12 +3,18 @@ updates:
   - package-ecosystem: gomod
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       aws-sdk-go:
         patterns:
-         - "github.com/aws/aws-sdk-go-v2"
-         - "github.com/aws/aws-sdk-go-v2/*"
+          - "github.com/aws/aws-sdk-go-v2"
+          - "github.com/aws/aws-sdk-go-v2/*"
+      test-packages:
+        patterns:
+          - "github.com/go-resty/resty/v2"
+          - "github.com/jarcoal/httpmock"
+          - "github.com/onsi/*"
+          - "github.com/stretchr/testify"
   - package-ecosystem: github-actions
     directory: /
     schedule:
