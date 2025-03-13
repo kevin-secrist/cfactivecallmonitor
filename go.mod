@@ -1,6 +1,9 @@
 module github.com/kevin-secrist/cfactivecallmonitor
 
-go 1.23
+go 1.23.0
+
+toolchain go1.23.4
+
 require (
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go-v2 v1.36.0
