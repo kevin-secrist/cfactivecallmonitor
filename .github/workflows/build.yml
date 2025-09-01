@@ -62,7 +62,7 @@ jobs:
       - run: terraform fmt -check
       - run: terraform init
       - run: terraform validate -no-color
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: build
           path: build/bin
