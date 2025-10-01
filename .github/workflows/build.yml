@@ -51,7 +51,7 @@ jobs:
       TF_VAR_OPS_EMAIL: ${{ secrets.OPS_EMAIL }}
     steps:
       - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v5
         with:
           mask-aws-account-id: true
           aws-region: us-east-1
