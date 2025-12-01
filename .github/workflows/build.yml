@@ -26,7 +26,7 @@ jobs:
       - run: go build -tags "lambda.norpc timetzdata" -v -o build/bin/harvestcalls/bootstrap lambdas/harvestcalls/main.go
       - run: go build -tags "lambda.norpc timetzdata" -v -o build/bin/active_call_notifier/bootstrap lambdas/active_call_notifier/main.go
       - run: go run github.com/onsi/ginkgo/v2/ginkgo -github-output -r -randomize-all -randomize-suites -race -trace -fail-on-pending -keep-going -poll-progress-after=10s -poll-progress-interval=10s
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: build
           path: build/bin
